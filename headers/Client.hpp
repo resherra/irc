@@ -8,15 +8,15 @@ using namespace std;
 class Client
 {
     private:
-        string username;
-        string nickname;
+        string  username;
+        string  nickname;
 
-        string message;
-    
+        string  message;
+
+        bool    auth;
     public: 
-        Client() {}
+        Client(): auth(false) {}
         ~Client() {}
-
 
         void    setNickname(string nick) {
             nickname = nick;
@@ -27,6 +27,16 @@ class Client
             username = user;
         }
 
+        void setMessage(string msg)
+        {
+            message += msg;
+        }
+
+        void    setAuth()
+        {
+            auth = true;
+        }
+        
         string getNickname() {
             return nickname;
         }
@@ -36,9 +46,14 @@ class Client
             return username;
         }
 
-        // std::string& getMessage() {
-        //     return message;
-        // }
+        std::string& getMessage() {
+            return message;
+        }
+
+        bool    getAuth()
+        {
+            return auth;
+        }
 };
 
 #endif

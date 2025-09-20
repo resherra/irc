@@ -8,15 +8,11 @@ int Server::getFdCount() {
     return fd_count;
 }
 
-struct pollfd* Server::getPfds()
-{
-    return pfds;
-}
-
 void Server::inst_poll()
 {
-    pfds = new pollfd[fd_size];
-    pfds[0].fd = sock_fd.getFd();
-    pfds[0].events = POLLIN;
+    struct pollfd inst;
+    inst.fd = sock_fd.getFd();
+    inst.events = POLLIN;
+    pfds.push_back(inst);
     fd_count = 1;
 }

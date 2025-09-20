@@ -3,6 +3,7 @@
 
 #include "Socket.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 #include <string>
 #include <poll.h>
@@ -11,6 +12,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <vector>
+
 
 using namespace std;
 
@@ -23,17 +25,15 @@ class Server
         Socket          sock_fd;
         int             fd_count;
         int             fd_size;
-        struct pollfd   *pfds;
+        vector<struct pollfd> pfds;
 
-        map<int, Client> clients;
-        map<int, Client> clients;
-
-
+        map<int, Client>         clients;
+        map<string, Channel>     channels;
 
         void createNewClient(int newfd);
         void newClient();
 
-        void handle_client_data(int *pfd_i);
+        void handle_client_data(int);
 
     public:
         Server(string port, string password);
@@ -42,10 +42,19 @@ class Server
 
         int             getSockFd();
         int             getFdCount();
-        struct pollfd*  getPfds();
 
         void            inst_poll();
         void            handle_connections();
+
+        void            pollcl();
+
+
+
+        //handlers
+        void    cap(int);
+        void    nick(Client&, string);
+        void    user(Client&, string, int);
+        void    ping(int);
 };
 
 #endif
