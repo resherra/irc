@@ -8,15 +8,21 @@ using namespace std;
 class Client
 {
     private:
+        int     fd;
         string  username;
         string  nickname;
 
         string  message;
-
         bool    auth;
     public: 
         Client(): auth(false) {}
+        Client(int fd) : fd(fd), auth(false) {}
         ~Client() {}
+
+        void    setFd(int f)
+        {
+            fd = f;
+        }
 
         void    setNickname(string nick) {
             nickname = nick;
@@ -29,6 +35,7 @@ class Client
 
         void setMessage(string msg)
         {
+            cout << "enters" << endl;
             message += msg;
         }
 
@@ -48,6 +55,11 @@ class Client
 
         std::string& getMessage() {
             return message;
+        }
+
+        int getFd()
+        {
+            return fd;
         }
 
         bool    getAuth()

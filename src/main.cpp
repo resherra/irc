@@ -18,28 +18,16 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-void    Server::pollcl()
-{
-    if (poll(pfds.data(), fd_count, -1) == -1)
-    {
-        cerr << "poll" << "\n";
-        std::exit(1);
-    }
-}
-
 int main(int ac, char **av)
 {
-    (void)ac;
-    (void) av;
     if (ac != 3)
     {
         cerr << "Usage: " << av[0] << " <port> <password>" << "\n";
         exit(1);
     }
     Server serv(av[1], av[2]);
-    
+    cout << "server: waiting for connections on port " << serv.getPort() << "\n";
     serv.inst_poll();    
-    cout << "server: waiting for connect ions on port " << PORT << "\n";
     while (1)
     {
         serv.pollcl();

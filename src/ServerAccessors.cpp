@@ -16,3 +16,8 @@ void Server::inst_poll()
     pfds.push_back(inst);
     fd_count = 1;
 }
+
+int Server::getPort()
+{
+    return port;
+}

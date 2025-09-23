@@ -17,7 +17,7 @@ class Socket
         struct  addrinfo hints, *ai;
 
     public:
-        Socket();
+        Socket(string);
         
         int getFd();
 };

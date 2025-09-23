@@ -14,14 +14,20 @@ class Channel
     private:
         string          name;
         vector<Client>  members;
-
+        
     public:
+        Channel() {};
+        Channel(string name): name(name) {};
+        
         void    addMember(Client cli)
         {
             members.push_back(cli);
         }
-        Channel() {};
-        Channel(string name): name(name) {};
+
+        vector<Client>& getMembers()
+        {
+            return members;
+        }
 };
 
 #endif

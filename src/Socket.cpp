@@ -5,13 +5,13 @@ int     Socket::getFd()
     return fd;
 }
 
-Socket::Socket()
+Socket::Socket(string port)
 {   
     std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    if (getaddrinfo(NULL, PORT, &hints, &ai) != 0)
+    if (getaddrinfo(NULL, port.c_str(), &hints, &ai) != 0)
     {
         std::cerr << "getaddrinfo fails" << "\n";
         std::exit(1);

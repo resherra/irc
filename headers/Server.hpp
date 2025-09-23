@@ -19,42 +19,42 @@ using namespace std;
 class Server
 {
     private:
-        int             port;
-        string          password;
+        int                     port;
+        string                  password;
         
-        Socket          sock_fd;
-        int             fd_count;
-        int             fd_size;
-        vector<struct pollfd> pfds;
+        Socket                  sock_fd;
+        int                     fd_count;
+        int                     fd_size;
+        vector<struct pollfd>   pfds;
 
-        map<int, Client>         clients;
-        map<string, Channel>     channels;
+        map<int, Client>        clients;
+        map<string, Channel>    channels;
 
-        void createNewClient(int newfd);
-        void newClient();
-
-        void handle_client_data(int);
-
+        void                    newClient();
+        void                    createNewClient(int);
+        void                    handle_client_data(int);
+        
     public:
-        Server(string port, string password);
-        Server();
+        Server(string, string);
         ~Server();
 
-        int             getSockFd();
-        int             getFdCount();
+        int                     getSockFd();
+        int                     getFdCount();
+        int                     getPort();
 
-        void            inst_poll();
-        void            handle_connections();
+        void                    inst_poll();
+        void                    pollcl();
 
-        void            pollcl();
+        void                    handle_connections();
 
-
-
-        //handlers
-        void    cap(int);
-        void    nick(Client&, string);
-        void    user(Client&, string, int);
-        void    ping(int);
+        //handlers      
+        void                    cap(int);
+        void                    nick(Client&, string);
+        void                    user(Client&, string, int);
+        void                    ping(int);
+        void                    join(string, Client, int);
+        void                    privmsg_channel(int, string, string);
+        void                    privmsg_user(int, string, string);
 };
 
 #endif

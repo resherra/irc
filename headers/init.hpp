@@ -1,9 +1,6 @@
 #ifndef INIT_HPP
 #define INIT_HPP
 
-#define PORT "6667"
-
-
 // socket() → Create a socket (endpoint for communication).
 // bind() → Attach socket to an IP address + port.
 // connect() → Initiate a connection (client side).
