@@ -1,11 +1,11 @@
 #include "../headers/Server.hpp"
 
-void Server::handle_client_data(int index)
+void Server::handleClientData(int index)
 {
-    char buffer[256];
-    
-    int nbytes = recv(pfds[index].fd, buffer, sizeof buffer, 0);    
+    char buffer[512];
+
     int sender_fd = pfds[index].fd;
+    int nbytes = recv(sender_fd, buffer, sizeof buffer, 0);    
     
     if (nbytes <= 0)
     {
@@ -24,9 +24,9 @@ void Server::handle_client_data(int index)
         Client& client = clients[sender_fd];
         string msg(buffer, nbytes);
         client.setMessage(msg);
-        
-        string::size_type pos;
-        while ((pos = client.getMessage().find("\r\n")) != std::string::npos)
+
+        string::size_type pos = client.getMessage().find("\r\n");
+        while (pos != std::string::npos)
         {
             string line = client.getMessage().substr(0, pos);
             client.getMessage().erase(0, pos + 2);
@@ -50,7 +50,7 @@ void Server::handle_client_data(int index)
                 if (line.find("CAP LS") == 0)
                     Server::cap(sender_fd);
                 else if (line.find("NICK") == 0)
-                    Server::nick(client, line);
+                    Server::nick(client, line, sender_fd);
                 else if (line.find("USER") == 0)
                     Server::user(client, line, sender_fd);
                 else if (line.find("PING") == 0)
@@ -60,8 +60,9 @@ void Server::handle_client_data(int index)
                 else if (line.find("PRIVMSG") == 0)
                 {
                     string target = line.substr(8, line.find(" ", 8) - 8);
+                    //to do: net cat check ":"
                     string msg = line.substr(line.find(':') + 1);
-                    string reply = ":" + client.getNickname() + "!user@host PRIVMSG " + target + " :" + msg + "\r\n";
+                    string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
                     if (target[0] == '#')
                     {
                         Server::privmsg_channel(sender_fd, target, reply);
@@ -69,6 +70,7 @@ void Server::handle_client_data(int index)
                         Server::privmsg_user(sender_fd, target, reply);
                 }
             }
+            pos = client.getMessage().find("\r\n");
         }
     }
 }

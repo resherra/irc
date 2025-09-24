@@ -18,7 +18,7 @@ void    Server::handle_connections()
             if (pfds[i].fd == sock_fd.getFd())
                 newClient();
             else
-                handle_client_data(i);
+                handleClientData(i);
         }
     }
 }

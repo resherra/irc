@@ -14,9 +14,10 @@ class Client
 
         string  message;
         bool    auth;
+        bool    registred;
     public: 
         Client(): auth(false) {}
-        Client(int fd) : fd(fd), auth(false) {}
+        Client(int fd) : fd(fd), auth(false), registred(false) {}
         ~Client() {}
 
         void    setFd(int f)
@@ -35,7 +36,6 @@ class Client
 
         void setMessage(string msg)
         {
-            cout << "enters" << endl;
             message += msg;
         }
 
@@ -43,7 +43,12 @@ class Client
         {
             auth = true;
         }
-        
+
+        void setRegistred()
+        {
+            registred = true;
+        }
+
         string getNickname() {
             return nickname;
         }
@@ -65,6 +70,11 @@ class Client
         bool    getAuth()
         {
             return auth;
+        }
+
+        bool getRegistred()
+        {
+            return registred;
         }
 };
 

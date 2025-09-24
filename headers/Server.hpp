@@ -32,7 +32,7 @@ class Server
 
         void                    newClient();
         void                    createNewClient(int);
-        void                    handle_client_data(int);
+        void                    handleClientData(int);
         
     public:
         Server(string, string);
@@ -49,8 +49,9 @@ class Server
 
         //handlers      
         void                    cap(int);
-        void                    nick(Client&, string);
+        void                    nick(Client&, string, int);
         void                    user(Client&, string, int);
+        void                    register_user(Client&, int);
         void                    ping(int);
         void                    join(string, Client, int);
         void                    privmsg_channel(int, string, string);

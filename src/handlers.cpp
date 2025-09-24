@@ -6,28 +6,60 @@ void    Server::cap(int sender_fd)
     send(sender_fd, reply.c_str(), reply.length(), 0);
 }
 
-void    Server::nick(Client& client, string line)
+void    Server::register_user(Client &client, int sender_fd)
+{
+    string nickname = client.getNickname();
+    string username = client.getUsername();
+
+    stringstream reply;
+    reply << ":myirc 001 " << nickname << " :Welcome to the Internet Relay Network "
+          << nickname << "!" << username << "@host\r\n";
+
+    send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+    client.setRegistred();
+}
+
+void    Server::nick(Client& client, string line, int sender_fd)
 {
     string nickname = line.substr(5);
-    client.setNickname(nickname);
+
+    bool user_exist = false;
+    for (map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        Client cl = (*it).second;
+        if (cl.getNickname() == nickname)
+        {
+            stringstream reply;
+            reply << ":myirc 433 * " + nickname + " :Nickname is already in use\r\n";
+            send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+            user_exist = true;
+            break;
+        }
+    }
+
+    if (!user_exist)
+    {
+        client.setNickname(nickname);
+
+        string username = client.getUsername();
+        if (!username.empty() && !client.getRegistred())
+            register_user(client, sender_fd);
+    }
 }
 
 void    Server::user(Client& client, string line, int sender_fd)
 {
     string username = line.substr(5, line.find(" ", 5) - 5);
     client.setUsername(username);
+
     string nickname = client.getNickname();
-    if (nickname.length() != 0)
-    {
-        stringstream reply;
-        reply << ":myirc 001 " << nickname << " :Welcome to MyIRC\r\n";
-        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
-    }
+    if (!nickname.empty() && !client.getRegistred())
+        register_user(client, sender_fd);
 }
 
 void    Server::ping(int sender_fd)
 {
-    std::string reply = "PONG : active\r\n";
+    std::string reply = "PONG :active\r\n";
     send(sender_fd, reply.c_str(), reply.length(), 0);
 }
 
