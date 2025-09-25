@@ -53,8 +53,8 @@ class Server
         void                    user(Client&, string, int);
         void                    register_user(Client&, int);
         void                    ping(int);
-        void                    join(string, Client, int);
-        void                    privmsg_channel(int, string, string);
+        void                    join(string, Client&, int);
+        void                    privmsg_channel(int, string, string, bool join_bool);
         void                    privmsg_user(int, string, string);
 };
 

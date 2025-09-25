@@ -63,18 +63,25 @@ void    Server::ping(int sender_fd)
     send(sender_fd, reply.c_str(), reply.length(), 0);
 }
 
-void    Server::privmsg_channel(int sender_fd, string target, string reply)
+void    Server::privmsg_channel(int sender_fd, string target, string reply, bool join_bool)
 {
     if (channels.find(target) != channels.end())
     {
         vector<Client> &cls = channels[target].getMembers();
         for (vector<Client>::iterator it = cls.begin(); it != cls.end(); ++it)
         {
+            if (!join_bool)
+                continue;
             if ((*it).getFd() != sender_fd)
             {
                 send((*it).getFd(), reply.c_str(), reply.length(), 0);
             }
         }
+    }
+    else
+    {
+        string err = ":myirc 403 " + clients[sender_fd].getNickname() + " " + target +  " :No such channel\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
     }
 }
 
@@ -94,29 +101,64 @@ void Server::privmsg_user(int sender_fd, string target, string reply)
     }
     if (!user_exist)
     {
-        std::string err = ":myirc 401 " + target + " :no such nick\r\n";
+        string err = ":myirc 401 " + target + " :No such nick\r\n";
         send(sender_fd, err.c_str(), err.length(), 0);
     }
 }
 
-void    Server::join(string line, Client client, int sender_fd)
+void    Server::join(string line, Client& client, int sender_fd)
 {
-    string channel = line.substr(5);
+    string channelName = line.substr(5);
+    string nickname = client.getNickname();
     string reply;
-    if (channel[0] != '#')
+
+    if (channelName[0] != '#')
     {
-        reply = ":myirc 403 " + client.getNickname() + " " + channel + " :no such channel\r\n";
+        reply = ":myirc 476 " + nickname + " " + channelName + " :Bad Channel Mask\r\n";
         send(sender_fd, reply.c_str(), reply.length(), 0);
         return;
     }
-    if (channels.find(channel) == channels.end())
-    {
-        channels[channel] = Channel(channel);
-    }
-    channels[channel].addMember(client);
     
-    reply = ":" + client.getNickname() + "!user@host JOIN :" + channel + "\r\n" 
-            + ":myirc 353 " + client.getNickname() + " = " + channel + " :" + client.getNickname() + "\r\n" 
-            + ":myirc 366 " + client.getNickname() + " " + channel + " :End of /NAMES list\r\n";
+    // check if channel already exist
+    if (channels.find(channelName) == channels.end())
+    {
+        channels[channelName] = Channel(channelName);
+        channels[channelName].addModerator(client.getNickname());
+    }
+    Channel &channel = channels[channelName];
+
+    // check if user already in
+    vector<Client> &members = channel.getMembers();
+    for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
+    {
+        if (nickname == (*it).getNickname())
+            return;
+    }
+
+    channel.addMember(client);
+
+    // list of channels members
+    string names;
+    set<string>& moderators = channel.getModerators();
+    for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
+    {
+        string nick = (*it).getNickname();
+        if (moderators.find(nick) != moderators.end())
+            names += "@";
+        names += nick + " ";               
+    }
+
+
+    // forward to members
+    reply = ":" + nickname + "!" + client.getUsername() + "@host JOIN :" + channelName + "\r\n";
+    Server::privmsg_channel(sender_fd, channelName, reply, true);
+    
+    // server reply
+    string topic_reply = (!channel.getTopic().empty()
+                              ? (":myirc 332 " + nickname + " " + channelName + " :" + channel.getTopic() + "\r\n")
+                              : (":myirc 331 " + nickname + " " + channelName + " :No topic is set\r\n"));
+    reply = topic_reply
+            + ":myirc 353 " + nickname + " = " + channelName + " :" + names + "\r\n" 
+            + ":myirc 366 " + nickname + " " + channelName + " :End of NAMES list\r\n";
     send(sender_fd, reply.c_str(), reply.length(), 0);
 }

@@ -33,7 +33,7 @@ void Server::handleClientData(int index)
 
             std::cout << "<<<" << line << ">>>" << std::endl;
 
-            if (line.find("PASS") == 0)
+            if (line.find("PASS ") == 0)
             {
                 string pass = line.substr(5);
                 if (pass != password)
@@ -47,27 +47,36 @@ void Server::handleClientData(int index)
             }
             if (client.getAuth())
             {
-                if (line.find("CAP LS") == 0)
+                if (line.find("CAP LS ") == 0)
                     Server::cap(sender_fd);
-                else if (line.find("NICK") == 0)
+                else if (line.find("NICK ") == 0)
                     Server::nick(client, line, sender_fd);
-                else if (line.find("USER") == 0)
+                else if (line.find("USER ") == 0)
                     Server::user(client, line, sender_fd);
-                else if (line.find("PING") == 0)
+                else if (line.find("PING ") == 0)
                     Server::ping(sender_fd);
-                else if (line.find("JOIN") == 0)
+                else if (line.find("JOIN ") == 0)
                     Server::join(line, client, sender_fd);
-                else if (line.find("PRIVMSG") == 0)
+                else if (line.find("PRIVMSG ") == 0)
                 {
-                    string target = line.substr(8, line.find(" ", 8) - 8);
-                    //to do: net cat check ":"
-                    string msg = line.substr(line.find(':') + 1);
-                    string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
-                    if (target[0] == '#')
+                    string::size_type space_pos = line.find(" ", 8);
+                    if (space_pos != string::npos && space_pos + 2 < line.length() && line[space_pos + 1] == ':')
                     {
-                        Server::privmsg_channel(sender_fd, target, reply);
-                    } else
-                        Server::privmsg_user(sender_fd, target, reply);
+                        string target = line.substr(8, space_pos - 8);
+                        string msg = line.substr(space_pos + 2);
+                        string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
+                        if (target[0] == '#')
+                        {
+                            Server::privmsg_channel(sender_fd, target, reply, false);
+                        }
+                        else
+                            Server::privmsg_user(sender_fd, target, reply);
+                    }
+                    else
+                    {
+                        string err = ":myirc 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n";
+                        send(sender_fd, err.c_str(), err.length(), 0);
+                    }
                 }
             }
             pos = client.getMessage().find("\r\n");

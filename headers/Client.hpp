@@ -15,7 +15,7 @@ class Client
         string  message;
         bool    auth;
         bool    registred;
-    public: 
+    public:     
         Client(): auth(false) {}
         Client(int fd) : fd(fd), auth(false), registred(false) {}
         ~Client() {}
