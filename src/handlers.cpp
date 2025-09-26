@@ -116,8 +116,8 @@ void    Server::join(string line, Client& client, int sender_fd)
         send(sender_fd, reply.c_str(), reply.length(), 0);
         return;
     }
-    
-    // check if channel already exist
+
+    // check if channel doesnt already exist
     if (channels.find(channelName) == channels.end())
     {
         channels[channelName] = Channel(channelName);
@@ -134,6 +134,7 @@ void    Server::join(string line, Client& client, int sender_fd)
     }
 
     channel.addMember(client);
+    client.addtoChannels(channelName);
 
     // list of channels members
     string names;
@@ -184,9 +185,12 @@ void    Server::part(Client& client, string line, int sender_fd)
                 if (moderators.find(nick) != moderators.end())
                     moderators.erase(nick);
                 members.erase(it);
+                client.rmfromChannels(target);
                 reply = ":" + nick + "!" + client.getUsername() + "@host PART " + target + " :" + msg + "\r\n";
                 Server::privmsg_channel(sender_fd, target, reply, false);
-                is_in = true;                                
+                is_in = true;                        
+                if (channel.is_empty())
+                    channels.erase(target);
                 break;
             }
         }
@@ -196,5 +200,9 @@ void    Server::part(Client& client, string line, int sender_fd)
             string err = ":myirc 442 " + nick + " " + target + " :You're not on that channel\r\n";
             send(sender_fd, err.c_str(), err.length(), 0);
         }
+    } else
+    {
+        string err = ":myirc 461 " + client.getNickname() + " PART :Not enough parameters\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
     }
 }

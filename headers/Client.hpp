@@ -2,6 +2,7 @@
 #define CLIENT_HPP
 
 #include <string>
+#include <set>
 
 using namespace std; 
 
@@ -15,10 +16,29 @@ class Client
         string  message;
         bool    auth;
         bool    registred;
+        
+        
+        set<string> channels;
+
     public:     
         Client(): auth(false) {}
         Client(int fd) : fd(fd), auth(false), registred(false) {}
         ~Client() {}
+
+        void    addtoChannels(string ch)
+        {
+            channels.insert(ch);
+        }
+
+        void rmfromChannels(string ch)
+        {
+            channels.erase(ch);
+        }
+
+        set<string>&    getChannels()
+        {
+            return channels;
+        }
 
         void    setFd(int f)
         {

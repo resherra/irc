@@ -13,6 +13,7 @@ void Server::handleClientData(int index)
             cerr << "socket " << sender_fd << " hung up" << endl;
         else
             cerr << "recv" << endl;
+        
         clients.erase(sender_fd);
         close(sender_fd);    
         pfds.erase(pfds.begin() + index);
@@ -78,6 +79,44 @@ void Server::handleClientData(int index)
                 }
                 else if (line.find("PART ") == 0)
                     Server::part(client, line, sender_fd);
+                else if (line.find("QUIT ") == 0)
+                {
+                    string::size_type space_pos = line.find(':');
+                    if (space_pos != string::npos && space_pos + 1 < line.length())
+                    {
+                        string msg = line.substr(space_pos + 1);
+                        string nick = client.getNickname();
+
+                        set<string> Clientchannels = client.getChannels();
+                        for (set<string>::iterator it_chan = Clientchannels.begin(); it_chan != Clientchannels.end(); ++it_chan)
+                        {
+                            Channel &channel = channels[*it_chan];
+                            vector<Client> &members = channel.getMembers();
+                            set<string> &moderators = channel.getModerators();
+
+                            for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
+                            {
+                                if (nick == (*it).getNickname())
+                                {
+                                    if (moderators.find(nick) != moderators.end())
+                                        moderators.erase(nick);
+                                    members.erase(it);
+                                    string reply = ":" + nick + "!" + client.getUsername() + "@host QUIT" + " :" + msg + "\r\n";
+                                    Server::privmsg_channel(sender_fd, *it_chan, reply, false);
+                                    if (channel.is_empty())
+                                        channels.erase(*it_chan);
+                                    break;
+                                }
+                            }
+                            client.rmfromChannels(*it_chan);
+                        }
+                    }
+                    else
+                    {
+                        string err = ":myirc 461 " + client.getNickname() + " PART :Not enough parameters\r\n";
+                        send(sender_fd, err.c_str(), err.length(), 0);
+                    }
+                }
             }
             pos = client.getMessage().find("\r\n");
         }

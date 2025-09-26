@@ -22,7 +22,12 @@ class Channel
     public:
         Channel() {};
         Channel(string name): name(name) {};
-        
+
+        bool    is_empty()
+        {
+            return members.empty();
+        }
+
         void    addMember(Client& cli)
         {
             members.push_back(cli);
