@@ -66,9 +66,7 @@ void Server::handleClientData(int index)
                         string msg = line.substr(space_pos + 2);
                         string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
                         if (target[0] == '#')
-                        {
                             Server::privmsg_channel(sender_fd, target, reply, false);
-                        }
                         else
                             Server::privmsg_user(sender_fd, target, reply);
                     }
@@ -78,6 +76,8 @@ void Server::handleClientData(int index)
                         send(sender_fd, err.c_str(), err.length(), 0);
                     }
                 }
+                else if (line.find("PART ") == 0)
+                    Server::part(client, line, sender_fd);
             }
             pos = client.getMessage().find("\r\n");
         }

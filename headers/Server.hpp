@@ -56,6 +56,7 @@ class Server
         void                    join(string, Client&, int);
         void                    privmsg_channel(int, string, string, bool join_bool);
         void                    privmsg_user(int, string, string);
+        void                    part(Client&, string, int);
 };
 
 #endif

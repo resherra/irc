@@ -70,12 +70,10 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
         vector<Client> &cls = channels[target].getMembers();
         for (vector<Client>::iterator it = cls.begin(); it != cls.end(); ++it)
         {
-            if (!join_bool)
-                continue;
-            if ((*it).getFd() != sender_fd)
-            {
+            if (join_bool)
                 send((*it).getFd(), reply.c_str(), reply.length(), 0);
-            }
+            else if ((*it).getFd() != sender_fd)
+                send((*it).getFd(), reply.c_str(), reply.length(), 0);
         }
     }
     else
@@ -161,4 +159,42 @@ void    Server::join(string line, Client& client, int sender_fd)
             + ":myirc 353 " + nickname + " = " + channelName + " :" + names + "\r\n" 
             + ":myirc 366 " + nickname + " " + channelName + " :End of NAMES list\r\n";
     send(sender_fd, reply.c_str(), reply.length(), 0);
+}
+
+void    Server::part(Client& client, string line, int sender_fd)
+{
+    string::size_type space_pos = line.find(" ", 5);
+    if (space_pos != string::npos && space_pos + 2 < line.length() && line[space_pos + 1] == ':')
+    {
+        string target = line.substr(5, space_pos - 5);
+        string msg = line.substr(space_pos + 2);
+        string nick = client.getNickname();
+        string reply;
+        bool is_in = false;
+
+        Channel &channel = channels[target];
+
+        // check if user in
+        vector<Client>  &members = channel.getMembers();
+        set<string>     &moderators = channel.getModerators();
+        for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
+        {
+            if (nick == (*it).getNickname())
+            {
+                if (moderators.find(nick) != moderators.end())
+                    moderators.erase(nick);
+                members.erase(it);
+                reply = ":" + nick + "!" + client.getUsername() + "@host PART " + target + " :" + msg + "\r\n";
+                Server::privmsg_channel(sender_fd, target, reply, false);
+                is_in = true;                                
+                break;
+            }
+        }
+
+        if (!is_in)
+        {
+            string err = ":myirc 442 " + nick + " " + target + " :You're not on that channel\r\n";
+            send(sender_fd, err.c_str(), err.length(), 0);
+        }
+    }
 }
