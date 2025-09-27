@@ -12,6 +12,7 @@ class Client
         int     fd;
         string  username;
         string  nickname;
+        string  hostname;
 
         string  message;
         bool    auth;
@@ -19,7 +20,6 @@ class Client
         
         
         set<string> channels;
-
     public:     
         Client(): auth(false) {}
         Client(int fd) : fd(fd), auth(false), registred(false) {}

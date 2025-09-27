@@ -12,8 +12,11 @@ void    Server::register_user(Client &client, int sender_fd)
     string username = client.getUsername();
 
     stringstream reply;
-    reply << ":myirc 001 " << nickname << " :Welcome to the Internet Relay Network "
-          << nickname << "!" << username << "@host\r\n";
+
+    reply << ":myirc 001 " << nickname << " :Welcome to the Internet Relay Network " << nickname << "!" << username << "@host\r\n";
+    reply << ":myirc 002 " << nickname << " :Your host is myirc, running version 1.0\r\n";
+    reply << ":myirc 003 " << nickname << " :This server was created 09/25\r\n";
+    reply << ":myirc 004 " << nickname << " :myirc 1.0 ao mtov\r\n";
 
     send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
     client.setRegistred();
@@ -22,6 +25,22 @@ void    Server::register_user(Client &client, int sender_fd)
 void    Server::nick(Client& client, string line, int sender_fd)
 {
     string nickname = line.substr(5);
+
+    if (client.getRegistred())
+    {
+        stringstream reply;
+        reply << ":myirc 462 * " << ":Unauthorized command (already registered)\r\n";
+        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+        return;
+    }
+
+    if (nickname.empty())
+    {
+        stringstream reply;
+        reply << ":myirc 431 * " << ":No nickname given\r\n";
+        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+        return;
+    }
 
     bool user_exist = false;
     for (map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
@@ -49,7 +68,23 @@ void    Server::nick(Client& client, string line, int sender_fd)
 
 void    Server::user(Client& client, string line, int sender_fd)
 {
+    if (client.getRegistred())
+    {
+        stringstream reply;
+        reply << ":myirc 462 * " << ":Unauthorized command (already registered)\r\n";
+        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+        return;
+    }
+
     string username = line.substr(5, line.find(" ", 5) - 5);
+    if (username.empty())
+    {
+        stringstream reply;
+        reply << ":myirc 461 * " << "USER :Not enough parameters\r\n";
+        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+        return;
+    }
+
     client.setUsername(username);
 
     string nickname = client.getNickname();
@@ -205,4 +240,42 @@ void    Server::part(Client& client, string line, int sender_fd)
         string err = ":myirc 461 " + client.getNickname() + " PART :Not enough parameters\r\n";
         send(sender_fd, err.c_str(), err.length(), 0);
     }
+}
+
+void Server::quit(Client &client, string line, int sender_fd, int index)
+{
+    string::size_type space_pos = line.find(':');
+    string msg;
+
+    if (space_pos != string::npos && space_pos + 1 < line.length())
+        msg = line.substr(space_pos + 1);
+
+    string nick = client.getNickname();
+    set<string> Clientchannels = client.getChannels();
+    for (set<string>::iterator it_chan = Clientchannels.begin(); it_chan != Clientchannels.end(); ++it_chan)
+    {
+        Channel &channel = channels[*it_chan];
+        vector<Client> &members = channel.getMembers();
+        set<string> &moderators = channel.getModerators();
+
+        for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
+        {
+            if (nick == (*it).getNickname())
+            {
+                if (moderators.find(nick) != moderators.end())
+                    moderators.erase(nick);
+                members.erase(it);
+                string reply = ":" + nick + "!" + client.getUsername() + "@host QUIT" + " :" + (!msg.empty() ? msg : "") + "\r\n";
+                Server::privmsg_channel(sender_fd, *it_chan, reply, false);
+                if (channel.is_empty())
+                    channels.erase(*it_chan);
+                break;
+            }
+        }
+    }
+    clients.erase(sender_fd);
+    close(sender_fd);
+    pfds.erase(pfds.begin() + index);
+    fd_count--;
+    cerr << "socket " << sender_fd << " hung up" << endl;
 }

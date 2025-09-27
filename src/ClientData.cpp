@@ -32,9 +32,14 @@ void Server::handleClientData(int index)
             string line = client.getMessage().substr(0, pos);
             client.getMessage().erase(0, pos + 2);
 
-            std::cout << "<<<" << line << ">>>" << std::endl;
+            // command
+            string::size_type space_pos = line.find(" ");
+            string  cmd = line.substr(0, space_pos);
 
-            if (line.find("PASS ") == 0)
+            std::cout << "<<<" << line << ">>>" << std::endl;
+            // std::cout << "<<<" << cmd << ">>>" << std::endl;
+
+            if (cmd == "PASS" && !client.getAuth())
             {
                 string pass = line.substr(5);
                 if (pass != password)
@@ -45,77 +50,56 @@ void Server::handleClientData(int index)
                     close(sender_fd);
                 }
                 client.setAuth();
+                break;
             }
             if (client.getAuth())
             {
                 if (line.find("CAP LS ") == 0)
                     Server::cap(sender_fd);
-                else if (line.find("NICK ") == 0)
+                else if (cmd == "NICK")
                     Server::nick(client, line, sender_fd);
-                else if (line.find("USER ") == 0)
+                else if (cmd == "USER")
                     Server::user(client, line, sender_fd);
-                else if (line.find("PING ") == 0)
-                    Server::ping(sender_fd);
-                else if (line.find("JOIN ") == 0)
-                    Server::join(line, client, sender_fd);
-                else if (line.find("PRIVMSG ") == 0)
+                else if (client.getRegistred())
                 {
-                    string::size_type space_pos = line.find(" ", 8);
-                    if (space_pos != string::npos && space_pos + 2 < line.length() && line[space_pos + 1] == ':')
+                    if (cmd == "PING")
+                        Server::ping(sender_fd);
+                    else if (cmd == "JOIN")
+                        Server::join(line, client, sender_fd);
+                    else if (cmd == "PRIVMSG")
                     {
-                        string target = line.substr(8, space_pos - 8);
-                        string msg = line.substr(space_pos + 2);
-                        string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
-                        if (target[0] == '#')
-                            Server::privmsg_channel(sender_fd, target, reply, false);
-                        else
-                            Server::privmsg_user(sender_fd, target, reply);
-                    }
-                    else
-                    {
-                        string err = ":myirc 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n";
-                        send(sender_fd, err.c_str(), err.length(), 0);
-                    }
-                }
-                else if (line.find("PART ") == 0)
-                    Server::part(client, line, sender_fd);
-                else if (line.find("QUIT ") == 0)
-                {
-                    string::size_type space_pos = line.find(':');
-                    if (space_pos != string::npos && space_pos + 1 < line.length())
-                    {
-                        string msg = line.substr(space_pos + 1);
-                        string nick = client.getNickname();
-
-                        set<string> Clientchannels = client.getChannels();
-                        for (set<string>::iterator it_chan = Clientchannels.begin(); it_chan != Clientchannels.end(); ++it_chan)
+                        string::size_type space_pos = line.find(" ", 8);
+                        if (space_pos != string::npos && space_pos + 2 < line.length() && line[space_pos + 1] == ':')
                         {
-                            Channel &channel = channels[*it_chan];
-                            vector<Client> &members = channel.getMembers();
-                            set<string> &moderators = channel.getModerators();
-
-                            for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it)
-                            {
-                                if (nick == (*it).getNickname())
-                                {
-                                    if (moderators.find(nick) != moderators.end())
-                                        moderators.erase(nick);
-                                    members.erase(it);
-                                    string reply = ":" + nick + "!" + client.getUsername() + "@host QUIT" + " :" + msg + "\r\n";
-                                    Server::privmsg_channel(sender_fd, *it_chan, reply, false);
-                                    if (channel.is_empty())
-                                        channels.erase(*it_chan);
-                                    break;
-                                }
-                            }
-                            client.rmfromChannels(*it_chan);
+                            string target = line.substr(8, space_pos - 8);
+                            string msg = line.substr(space_pos + 2);
+                            string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
+                            if (target[0] == '#')
+                                Server::privmsg_channel(sender_fd, target, reply, false);
+                            else
+                                Server::privmsg_user(sender_fd, target, reply);
+                        }
+                        else
+                        {
+                            string err = ":myirc 461 " + client.getNickname() + " PRIVMSG :Not enough parameters\r\n";
+                            send(sender_fd, err.c_str(), err.length(), 0);
                         }
                     }
+                    else if (cmd == "PART")
+                        Server::part(client, line, sender_fd);
+                    else if (cmd == "QUIT")
+                        Server::quit(client, line, sender_fd, index);
                     else
                     {
-                        string err = ":myirc 461 " + client.getNickname() + " PART :Not enough parameters\r\n";
-                        send(sender_fd, err.c_str(), err.length(), 0);
+                        stringstream reply;
+                        reply << ":myirc 421 " << client.getNickname() << " " << cmd << " :Unknown command\r\n";
+                        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
                     }
+                } else
+                {
+                    stringstream reply;
+                    reply << ":myirc 451 * " << ":You have not registered\r\n";
+                    send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
                 }
             }
             pos = client.getMessage().find("\r\n");

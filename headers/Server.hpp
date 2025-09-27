@@ -47,6 +47,8 @@ class Server
 
         void                    handle_connections();
 
+        
+
         //handlers      
         void                    cap(int);
         void                    nick(Client&, string, int);
@@ -57,6 +59,8 @@ class Server
         void                    privmsg_channel(int, string, string, bool join_bool);
         void                    privmsg_user(int, string, string);
         void                    part(Client&, string, int);
+        void                    quit(Client&, string, int, int);
+
 };
 
 #endif
