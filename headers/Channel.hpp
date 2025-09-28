@@ -2,10 +2,12 @@
 #define CHANNEL_HPP
 
 #include "Client.hpp"
-
 #include <string>
 #include <set>
 #include <vector>
+#include <iostream>
+#include <cstdlib>
+
 
 
 using namespace std;
@@ -18,45 +20,41 @@ class Channel
 
         vector<Client>  members;
         set<string>     moderators;
+
+        bool inv_only;
+        bool topic_resticted;
+        int user_limit;
+        string key;
         
     public:
-        Channel() {};
+        Channel():inv_only(false), topic_resticted(false), user_limit(0) {};
         Channel(string name): name(name) {};
 
-        bool    is_empty()
-        {
-            return members.empty();
-        }
+        bool    is_empty();
+        void    addMember(Client& cli);
+        vector<Client>& getMembers();
+        set<string> &getModerators();
+        void    addModerator(string cli);
+        string&    getTopic();
+        void    setTopic(string to);
 
-        void    addMember(Client& cli)
-        {
-            members.push_back(cli);
-        }
+        bool isTopicRestricted();
+        void setTopicRestricted(bool value);
 
-        vector<Client>& getMembers()
-        {
-            return members;
-        }
+        //user limit
+        void setUserLimit(int limit);
+        void removeUserLimit(void);
+        int getUserLimit(void);
 
-        set<string> &getModerators()
-        {
-            return moderators;
-        }
+        //key
+        void setKey(string key);
+        string getKey(void);
+        bool hasKey(void);
+        bool checkKey(string &key);
 
-        void    addModerator(string cli)
-        {
-            moderators.insert(cli);
-        }
-
-        string&    getTopic()
-        {
-            return topic;
-        }
-
-        void    setTopic(string to)
-        {
-            topic = to;
-        }
+        bool isMember(string &);
+        bool isMod(string &);
+        void removeMember(string &);
 };
 
 #endif

@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <cstring>
+#include <cstdlib>
 
 using namespace std;
 

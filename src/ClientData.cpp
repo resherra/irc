@@ -87,6 +87,10 @@ void Server::handleClientData(int index)
                     }
                     else if (cmd == "PART")
                         Server::part(client, line, sender_fd);
+                    else if(cmd == "KICK")
+                        Server::kick(line, client, sender_fd);
+                    else if(cmd == "INVITE")
+                        Server::invite(line, client, sender_fd);
                     else if (cmd == "QUIT")
                         Server::quit(client, line, sender_fd, index);
                     else
