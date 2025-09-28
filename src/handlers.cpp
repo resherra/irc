@@ -102,6 +102,19 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
 {
     if (channels.find(target) != channels.end())
     {
+          //this for cannot a user send a message on a channel after being kicked
+        //we still need some modification on the join function
+        //check channel if invite only or not and also checking the user limit
+        //the kick funcction now is working as expected but if a user kicked from a channel and he has the invite he can join again.
+        Channel& channel = channels[target];
+        string senderNick = clients[sender_fd].getNickname();
+        
+        if (!channel.isMember(senderNick)) {
+            string err = ":myirc 404 " + senderNick + " " + target + " :Cannot send to channel\r\n";
+            send(sender_fd, err.c_str(), err.length(), 0);
+            return;
+        }
+        
         vector<Client> &cls = channels[target].getMembers();
         for (vector<Client>::iterator it = cls.begin(); it != cls.end(); ++it)
         {

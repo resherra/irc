@@ -12,6 +12,10 @@
 #include <unistd.h>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
+#include <cstdio>
+
+
 
 
 using namespace std;
@@ -61,6 +65,15 @@ class Server
         void                    part(Client&, string, int);
         void                    quit(Client&, string, int, int);
 
+
+        //commands
+        void kick (string&, Client&, int);
+        void invite (string&, Client&, int);
+        void topic (string, Client, int);
+        void mode (string, Client, int);
+
+        //helpers func
+        int findCliendFD(const string &nick);
 };
 
 #endif
