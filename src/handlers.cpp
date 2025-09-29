@@ -102,10 +102,6 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
 {
     if (channels.find(target) != channels.end())
     {
-          //this for cannot a user send a message on a channel after being kicked
-        //we still need some modification on the join function
-        //check channel if invite only or not and also checking the user limit
-        //the kick funcction now is working as expected but if a user kicked from a channel and he has the invite he can join again.
         Channel& channel = channels[target];
         string senderNick = clients[sender_fd].getNickname();
         
@@ -114,7 +110,7 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
             send(sender_fd, err.c_str(), err.length(), 0);
             return;
         }
-        
+
         vector<Client> &cls = channels[target].getMembers();
         for (vector<Client>::iterator it = cls.begin(); it != cls.end(); ++it)
         {
@@ -230,12 +226,12 @@ void    Server::part(Client& client, string line, int sender_fd)
         {
             if (nick == (*it).getNickname())
             {
+                reply = ":" + nick + "!" + client.getUsername() + "@host PART " + target + " :" + msg + "\r\n";
+                Server::privmsg_channel(sender_fd, target, reply, false);
                 if (moderators.find(nick) != moderators.end())
                     moderators.erase(nick);
                 members.erase(it);
                 client.rmfromChannels(target);
-                reply = ":" + nick + "!" + client.getUsername() + "@host PART " + target + " :" + msg + "\r\n";
-                Server::privmsg_channel(sender_fd, target, reply, false);
                 is_in = true;                        
                 if (channel.is_empty())
                     channels.erase(target);
@@ -275,11 +271,11 @@ void Server::quit(Client &client, string line, int sender_fd, int index)
         {
             if (nick == (*it).getNickname())
             {
+                string reply = ":" + nick + "!" + client.getUsername() + "@host QUIT" + " :" + (!msg.empty() ? msg : "") + "\r\n";
+                Server::privmsg_channel(sender_fd, *it_chan, reply, false);
                 if (moderators.find(nick) != moderators.end())
                     moderators.erase(nick);
                 members.erase(it);
-                string reply = ":" + nick + "!" + client.getUsername() + "@host QUIT" + " :" + (!msg.empty() ? msg : "") + "\r\n";
-                Server::privmsg_channel(sender_fd, *it_chan, reply, false);
                 if (channel.is_empty())
                     channels.erase(*it_chan);
                 break;
