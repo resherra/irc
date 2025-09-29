@@ -37,12 +37,12 @@ void Server::handleClientData(int index)
                 string pass = line.substr(5);
                 if (pass != password)
                 {
-                    std::string reply = ":myirc 464 * :Password incorrect\r\n";
+                    string reply = ":myirc 464 * :Password incorrect\r\n";
                     send(sender_fd, reply.c_str(), reply.length(), 0);
-                    clients.erase(sender_fd);
-                    close(sender_fd);
+                } else
+                {
+                    client.setAuth();
                 }
-                client.setAuth();
                 break;
             }
             if (client.getAuth())
