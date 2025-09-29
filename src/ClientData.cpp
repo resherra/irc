@@ -9,16 +9,9 @@ void Server::handleClientData(int index)
     
     if (nbytes <= 0)
     {
-        if (nbytes == 0)
-            cerr << "socket " << sender_fd << " hung up" << endl;
-        else
+        if (nbytes)
             cerr << "recv" << endl;
-        
-        clients.erase(sender_fd);
-        close(sender_fd);    
-        pfds.erase(pfds.begin() + index);
-        fd_count--;
-        return;
+        Server::quit(clients[sender_fd], "nc", sender_fd, index);
     }
     else
     {

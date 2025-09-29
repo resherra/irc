@@ -191,7 +191,6 @@ void    Server::join(string line, Client& client, int sender_fd)
         names += nick + " ";               
     }
 
-
     // forward to members
     reply = ":" + nickname + "!" + client.getUsername() + "@host JOIN :" + channelName + "\r\n";
     Server::privmsg_channel(sender_fd, channelName, reply, true);
@@ -286,5 +285,5 @@ void Server::quit(Client &client, string line, int sender_fd, int index)
     close(sender_fd);
     pfds.erase(pfds.begin() + index);
     fd_count--;
-    cerr << "socket " << sender_fd << " hung up" << endl;
+    cout << "socket " << sender_fd << " hung up" << endl;
 }

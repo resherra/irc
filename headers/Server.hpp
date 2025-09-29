@@ -64,6 +64,7 @@ class Server
         void                    privmsg_user(int, string, string);
         void                    part(Client&, string, int);
         void                    quit(Client&, string, int, int);
+        void                    exit(Client&, string, int, int);
 
 
         //commands
