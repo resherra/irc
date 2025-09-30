@@ -79,5 +79,5 @@ class Server
 };
 
 
-void handle_signals(int sig);
+void handle_signals(int sig, Server &serv);
 #endif
