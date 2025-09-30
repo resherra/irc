@@ -51,8 +51,9 @@ class Server
 
         void                    handle_connections();
 
+        // get all FDs 
+        vector<struct pollfd> getPollfds();
         
-
         //handlers      
         void                    cap(int);
         void                    nick(Client&, string, int);
@@ -65,7 +66,7 @@ class Server
         void                    part(Client&, string, int);
         void                    quit(Client&, string, int, int);
         void                    exit(Client&, string, int, int);
-
+   
 
         //commands
         void kick (string&, Client&, int);
@@ -77,4 +78,6 @@ class Server
         int findCliendFD(const string &nick);
 };
 
+
+void handle_signals(int sig);
 #endif

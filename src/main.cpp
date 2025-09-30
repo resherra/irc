@@ -14,7 +14,6 @@ void *get_in_addr(struct sockaddr *sa)
     {
         return &(((struct sockaddr_in *)sa)->sin_addr);
     }
-
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
@@ -26,6 +25,8 @@ int main(int ac, char **av)
         exit(1);
     }
     Server serv(av[1], av[2]);
+    signal(SIGINT, handle_signals);
+
     cout << "server: waiting for connections on port " << serv.getPort() << "\n";
     serv.inst_poll();    
     while (1)

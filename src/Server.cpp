@@ -32,3 +32,15 @@ Server::Server(string port, string password):   port(atoi(port.c_str())),
 Server::~Server()
 {
 }
+
+
+
+
+
+
+vector<struct pollfd> Server::getPollfds()
+{
+    return (this->pfds);
+
+            
+        }
