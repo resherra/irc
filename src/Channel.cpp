@@ -28,7 +28,7 @@ bool Channel::isMember(string& nick){
     return false;
 }
 
-bool Channel::isMod(string &nick){
+bool Channel::isMod(string nick){
     return moderators.count(nick) > 0;
 }
 
@@ -46,7 +46,6 @@ bool Channel::isTopicRestricted(){
 void Channel::setTopicRestricted(bool value){
     topic_resticted = value;
 }
-
 
 void Channel::setUserLimit(int limit){
     this->user_limit = limit;
@@ -76,7 +75,32 @@ bool Channel::checkKey(string &key){
     return key.empty() || this->key == key;
 }
 
+void Channel::removekey(void){
+    this->key.clear();
+}
 
+void Channel::setinviteonly(bool value){
+    this->inv_only = value;
+}
+
+bool Channel::isinviteonly(void) const{
+    return this->inv_only;
+}
+
+void Channel::addinvite(string &nick){
+    invitelist.insert(nick);
+    cout <<  "the " + nick + " added to the invite list" << endl;
+
+}
+
+bool Channel::isinvited(string &nick){
+    return invitelist.count(nick) > 0;
+}
+
+void Channel::removeinvite(string &nick){
+    invitelist.erase(nick);
+     cout <<  "the " + nick + " removed from the invite list" << endl;
+}
 
 void Channel::removeMember(string& nick){
     for (vector<Client>::iterator it = members.begin(); it != members.end(); ++it){
@@ -90,4 +114,40 @@ void Channel::removeMember(string& nick){
 
     if(moderators.erase(nick) > 0)
          std::cout << "the member: " + nick << " erased frome the ops set" << endl;
+}
+
+void Channel::removeModerator(string nick){
+    moderators.erase(nick);
+}
+
+string Channel::getModeString(){
+    string modes = "+";
+    string params = "";
+    if(inv_only)
+        modes += "i";
+    if(topic_resticted)
+        modes += "t";
+
+    if(!getKey().empty()){
+        modes += "k";
+        if(params.empty()){
+            params += getKey();
+        }
+    }
+
+    if(getUserLimit() > 0){
+        modes += "l";
+        if(!params.empty())
+            params += " ";
+        ostringstream oss;
+        oss << getUserLimit();
+        params += oss.str();
+    }
+
+    if(modes == "+")
+        return "+";
+    if (params.empty())
+        return modes;
+    else
+        return modes + " " + params;
 }

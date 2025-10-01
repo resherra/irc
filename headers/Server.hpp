@@ -72,7 +72,7 @@ class Server
         void kick (string&, Client&, int);
         void invite (string&, Client&, int);
         void topic (string, Client, int);
-        void mode (string, Client, int);
+        void mode (string, Client&, int);
 
         //helpers func
         int findCliendFD(const string &nick);

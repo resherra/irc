@@ -6,7 +6,6 @@ int Server::findCliendFD(const string &nick){
         if(it->second.getNickname() == nick)
             return it->first;
     }
-
     return -1;
 }
 
@@ -115,7 +114,7 @@ void Server::invite(string &line, Client &client, int sender_fd){
 }
 
 void Server::topic(string line, Client client, int sender_fd){
-    
+
     istringstream iss(line);
     string cmd, chName, newTop, remainTop;
     iss >> cmd >> chName;
@@ -175,6 +174,110 @@ void Server::topic(string line, Client client, int sender_fd){
     }
 }
 
-// void Server::mode(string line, Client client, int sender_fd){
+void Server::mode(string line, Client &client, int sender_fd){
+    istringstream iss(line);
+    string cmd, chName, modes;
+    vector<string> params;
 
-// }
+    (void)sender_fd;
+    
+    iss >> cmd >> chName >> modes;
+
+    std::string modeparams;
+    while (iss >> modeparams)
+        params.push_back(modeparams);
+
+
+    cout << "\n\n--------------- line -------------" << endl;
+    cout << line << endl;
+
+    cout << "--------------- cmd -------------" << endl;
+    cout << cmd << endl;
+
+    cout << "--------------- channel name -------------" << endl;
+    cout << chName << endl;
+
+    
+    
+    
+    
+    cout << "--------------- modes -------------" << endl;
+    cout << modes << endl;
+    
+    cout << "--------------- modeparams -------------" << endl;
+    cout << modeparams << endl;
+    
+    cout << "---------- params vector ---------------------" << endl;
+
+    for (vector<string>::iterator t= params.begin(); t != params.end(); ++t){
+        cout << *t << endl;
+    }
+    cout << "-------------------------------------\n\n" << endl;
+    
+    if(channels.find(chName) == channels.end()){
+        string err = ":myirc 403 " + client.getNickname() + " " + chName + " :No such channel\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
+        return;
+    }
+
+    Channel& channel = channels[chName];
+    cout << "------- mode string-------" << endl;
+
+    cout << channel.getModeString() << endl;
+    cout << "--------------------------\n\n" << endl;
+
+    if (modes.empty()) {
+        std::string reply = ":myirc 324 " + client.getNickname() + " " + chName + " " + channel.getModeString() + "\r\n";
+        send(sender_fd, reply.c_str(), reply.length(), 0);
+        return;
+    }
+    
+    if(!channel.isMod(client.getNickname())){
+        string err = ":myirc 482 " + client.getNickname() + " " + chName + " :You're not channel moderator\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
+        return;
+    }
+
+    bool set;
+
+    for (size_t i = 0; i < modes.size(); i++){
+        char flag = modes[i];
+        if(flag == '+'){
+            set = true;
+            continue;
+        }
+        if(flag == '-'){
+            set = false; 
+            continue;
+        }
+
+
+        switch (flag){
+        case 'i':
+            channel.setinviteonly(set);
+            break;
+
+        case 't':
+
+            break;
+        case 'k':
+            
+            break;
+
+        case 'o':
+            
+            break;
+
+        case 'l':
+            
+            break;
+        
+        default:
+            break;
+        }
+    
+
+    }
+
+    
+}

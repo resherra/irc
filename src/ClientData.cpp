@@ -84,6 +84,10 @@ void Server::handleClientData(int index)
                         Server::kick(line, client, sender_fd);
                     else if(cmd == "INVITE")
                         Server::invite(line, client, sender_fd);
+                    else if(cmd == "TOPIC")
+                        Server::topic(line, client, sender_fd);
+                    else if(cmd == "MODE")
+                        Server::mode(line, client, sender_fd);
                     else if (cmd == "QUIT")
                         Server::quit(client, line, sender_fd, index);
                     else
