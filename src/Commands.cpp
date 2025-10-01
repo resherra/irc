@@ -114,9 +114,66 @@ void Server::invite(string &line, Client &client, int sender_fd){
 
 }
 
-// void Server::topic(string line, Client client, int sender_fd){
+void Server::topic(string line, Client client, int sender_fd){
+    
+    istringstream iss(line);
+    string cmd, chName, newTop, remainTop;
+    iss >> cmd >> chName;
 
-// }
+    getline(iss, remainTop);
+    if(!remainTop.empty()){
+        size_t start    = remainTop.find_first_not_of(" ");
+        if(start != string::npos){
+            if(remainTop[start] == ':')
+                start++;
+        }
+        newTop = remainTop.substr(start);
+    }
+
+    if(channels.find(chName) == channels.end()){
+        string err = ":myirc 403 " + client.getNickname() + " " + chName + " :No such channel\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
+        return;
+    }
+
+    Channel& channel = channels[chName];
+    string clientNick = client.getNickname();
+
+    if(!channel.isMember(clientNick)){
+        string err = ":myirc 442 " + client.getNickname() + " " + chName + " :You're not on that channel\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
+        return;
+    }
+
+    if(newTop.empty()){
+        string currTopic = channel.getTopic();
+        if(currTopic.empty()){
+            string rpl = ":myirc 331 " + client.getNickname() + " " + chName + " :No topic is set\r\n";
+            send(sender_fd, rpl.c_str(), rpl.length(), 0);
+        }
+        else{
+            string rpl = ":myirc 332 " + client.getNickname() + " " + chName + " :" + currTopic + "\r\n";
+            send(sender_fd, rpl.c_str(), rpl.length(), 0);
+        }
+        return ;
+    }
+
+    if(channel.isTopicRestricted() && !channel.isMod(clientNick)){
+        string err = ":myirc 482 " + client.getNickname() + " " + chName + " :You're not channel operator\r\n";
+        send(sender_fd, err.c_str(), err.length(), 0);
+        return ;
+    }
+
+    channel.setTopic(newTop);
+    string topmsg = ":" + client.getNickname() + "!" + client.getUsername() + "@host TOPIC " + chName + " :" + newTop + "\r\n"; 
+    
+    vector<Client> &members = channel.getMembers();
+    for (size_t i = 0; i < members.size(); i++){
+        int member_fd = findCliendFD(members[i].getNickname());
+        if(member_fd != -1)
+            send(member_fd, topmsg.c_str(), topmsg.length(), 0);
+    }
+}
 
 // void Server::mode(string line, Client client, int sender_fd){
 
