@@ -16,7 +16,7 @@
 #include <cstdio>
 
 
-
+extern int signaled;
 
 using namespace std;
 
@@ -79,5 +79,5 @@ class Server
 };
 
 
-void handle_signals(int sig, Server &serv);
+void handle_signals(int sig);
 #endif
