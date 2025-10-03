@@ -79,15 +79,11 @@ void Server::invite(string &line, Client &client, int sender_fd){
     string cmd, target, chName;
     iss >> cmd >> target >> chName;
 
-    cout << "invite entring" << endl;
-
-
     if(channels.find(chName) == channels.end()){
         string err = ":myirc 403 " + clients[sender_fd].getNickname() + " " + target +  " :No such channel\r\n";
         send(sender_fd, err.c_str(), err.length(), 0);
         return ;
     }
-
 
     Channel& channel = channels[chName];
     string clientNick = client.getNickname();
@@ -178,44 +174,15 @@ void Server::topic(string line, Client client, int sender_fd){
 }
 
 void Server::mode(string line, Client &client, int sender_fd){
+
     istringstream iss(line);
     string cmd, chName, modes;
     vector<string> params;
-
-    (void)sender_fd;
-    
     iss >> cmd >> chName >> modes;
-
     std::string modeparams;
+
     while (iss >> modeparams)
         params.push_back(modeparams);
-
-
-    cout << "\n\n--------------- line -------------" << endl;
-    cout << line << endl;
-
-    cout << "--------------- cmd -------------" << endl;
-    cout << cmd << endl;
-
-    cout << "--------------- channel name -------------" << endl;
-    cout << chName << endl;
-
-    
-    
-    
-    
-    cout << "--------------- modes -------------" << endl;
-    cout << modes << endl;
-    
-    cout << "--------------- modeparams -------------" << endl;
-    cout << modeparams << endl;
-    
-    cout << "---------- params vector ---------------------" << endl;
-
-    for (vector<string>::iterator t= params.begin(); t != params.end(); ++t){
-        cout << *t << endl;
-    }
-    cout << "-------------------------------------\n\n" << endl;
     
     if(channels.find(chName) == channels.end()){
         string err = ":myirc 403 " + client.getNickname() + " " + chName + " :No such channel\r\n";
@@ -224,10 +191,6 @@ void Server::mode(string line, Client &client, int sender_fd){
     }
 
     Channel& channel = channels[chName];
-    cout << "------- mode string-------" << endl;
-
-    cout << channel.getModeString() << endl;
-    cout << "--------------------------\n\n" << endl;
 
     if (modes.empty()) {
         std::string reply = ":myirc 324 " + client.getNickname() + " " + chName + " " + channel.getModeString() + "\r\n";
@@ -266,13 +229,11 @@ void Server::mode(string line, Client &client, int sender_fd){
 
         case 'i':
             channel.setinviteonly(set);
-            cout << "channel invite only modified " + set << endl;
             modePower = true;
             break;
 
         case 't':
             channel.setTopicRestricted(set);
-            cout << "channel topic restricted modified " + set << endl;
             modePower = true;
             break;
 
@@ -284,12 +245,10 @@ void Server::mode(string line, Client &client, int sender_fd){
                 currParam = params[index];
                 index++;
                 modePower = true;
-                cout << "the channel key appliedd" << endl;
             }
         }
         else{
             channel.removekey();
-            cout << "the channel key removed"<< endl;
             modePower = true;
         }
         break;
@@ -301,11 +260,9 @@ void Server::mode(string line, Client &client, int sender_fd){
             if(channel.isMember(clNick)){
                 if(set){
                     channel.addModerator(clNick);
-                    cout << clNick + " added as moderator to chanel" << endl;
                 }
                 else{
                     channel.removeModerator(clNick);
-                    cout << clNick + " removed from moderator list " << endl;
                 }
                 currParam = clNick;
                 modePower = true;
@@ -323,14 +280,11 @@ void Server::mode(string line, Client &client, int sender_fd){
                         currParam = params[index];
                         modePower = true;
                         index++;
-                        cout << "the channel user limit applied" << endl;
                     }
                 }
             }
-            else{
+            else
                 channel.removeUserLimit();
-                cout << "the channel user limit removed" << endl;
-            }
             break;
         
         default:
@@ -368,25 +322,20 @@ void Server::mode(string line, Client &client, int sender_fd){
         }
     }
 
-        if(!appliedmode.empty()){
-            string modemsg = ":" + client.getNickname() + "!" + client.getUsername() + "@host MODE " +chName+" " + appliedmode;
+    if(!appliedmode.empty()){
+        string modemsg = ":" + client.getNickname() + "!" + client.getUsername() + "@host MODE " +chName+" " + appliedmode;
 
-            if(!modeparams.empty())
-                modemsg += " " + modeparams;
-            modemsg += "\r\n";
+        if(!modeparams.empty())
+            modemsg += " " + modeparams;
+        modemsg += "\r\n";
 
-            vector<Client> &members = channel.getMembers();
-            for (size_t i = 0; i < members.size(); i++)
-            {
-                int mem_fd = findCliendFD(members[i].getNickname());
-                if(mem_fd != -1)
-                    send(mem_fd, modemsg.c_str(), modemsg.length(), 0);
-            }
-                       
+        vector<Client> &members = channel.getMembers();
+        for (size_t i = 0; i < members.size(); i++)
+        {
+            int mem_fd = findCliendFD(members[i].getNickname());
+            if(mem_fd != -1)
+                send(mem_fd, modemsg.c_str(), modemsg.length(), 0);
         }
+                    
     }
-
-
-//*first thing i have todo rn:
-// *check all the commands are work perfectly
-    // * a user after kicked a channel cant join aain unless if invite sent to him
+}
