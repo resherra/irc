@@ -238,46 +238,147 @@ void Server::mode(string line, Client &client, int sender_fd){
         return;
     }
 
-    bool set;
-
+    bool set = true;
+    size_t index = 0;
+    string appliedmode = "";
+    
     for (size_t i = 0; i < modes.size(); i++){
+        
+        bool modePower = false;
         char flag = modes[i];
+        
         if(flag == '+'){
             set = true;
             continue;
         }
+        
         if(flag == '-'){
             set = false; 
             continue;
         }
+        
 
-
+        string currParam = "";
         switch (flag){
+
         case 'i':
             channel.setinviteonly(set);
+            cout << "channel invite only modified " + set << endl;
+            modePower = true;
             break;
 
         case 't':
+            channel.setTopicRestricted(set);
+            cout << "channel topic restricted modified " + set << endl;
+            modePower = true;
+            break;
 
-            break;
+
         case 'k':
-            
-            break;
+        if(set){
+            if(index < params.size()){
+                channel.setKey(params[index]);
+                currParam = params[index];
+                index++;
+                modePower = true;
+                cout << "the channel key appliedd" << endl;
+            }
+        }
+        else{
+            channel.removekey();
+            cout << "the channel key removed"<< endl;
+            modePower = true;
+        }
+        break;
 
         case 'o':
+        if(index < params.size()){
+            string clNick = params[index];
+            index++;
+            if(channel.isMember(clNick)){
+                if(set){
+                    channel.addModerator(clNick);
+                    cout << clNick + " added as moderator to chanel" << endl;
+                }
+                else{
+                    channel.removeModerator(clNick);
+                    cout << clNick + " removed from moderator list " << endl;
+                }
+                currParam = clNick;
+                modePower = true;
+            }
+        }
             
-            break;
+        break;
 
         case 'l':
-            
+            if(set){
+                if(index < params.size()){
+                    int limit = atoi(params[index].c_str());
+                    if(limit > 0){
+                        channel.setUserLimit(limit);
+                        currParam = params[index];
+                        modePower = true;
+                        index++;
+                        cout << "the channel user limit applied" << endl;
+                    }
+                }
+            }
+            else{
+                channel.removeUserLimit();
+                cout << "the channel user limit removed" << endl;
+            }
             break;
         
         default:
-            break;
+            string err = ":myirc 472 " + client.getNickname() + " " + string(1, flag) + " :is unknown mode char to me\r\n";
+            send(sender_fd, err.c_str(), err.length(), 0);
+            continue ;
         }
-    
 
+        if(modePower){
+
+            if(appliedmode.empty()){
+                if(set)
+                    appliedmode += "+";
+                else
+                    appliedmode += "-";
+            }
+            else{
+                char lstchar = '\0'; 
+                if(!appliedmode.empty())
+                    lstchar = appliedmode.size() - 1;
+                if(set && lstchar == '-')
+                    appliedmode += "+";
+                else if(!set && lstchar == '+')
+                    appliedmode += "-";
+            }
+            appliedmode += flag;
+            
+            if(!currParam.empty()){
+                if(!modeparams.empty()){
+                    modeparams += " ";
+                }
+                modeparams += currParam;
+            }
+            
+        }
     }
 
-    
-}
+        if(!appliedmode.empty()){
+            string modemsg = ":" + client.getNickname() + "!" + client.getUsername() + "@host MODE " +chName+" " + appliedmode;
+
+            if(!modeparams.empty())
+                modemsg += " " + modeparams;
+            modemsg += "\r\n";
+
+            vector<Client> &members = channel.getMembers();
+            for (size_t i = 0; i < members.size(); i++)
+            {
+                int mem_fd = findCliendFD(members[i].getNickname());
+                if(mem_fd != -1)
+                    send(mem_fd, modemsg.c_str(), modemsg.length(), 0);
+            }
+                       
+        }
+    }

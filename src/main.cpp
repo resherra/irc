@@ -1,8 +1,5 @@
 #include "../headers/Server.hpp"
 
-#include <netdb.h>
-#include <arpa/inet.h>
-
 using   namespace std;
 
 struct sockaddr_storage their_addr; // connector's address info

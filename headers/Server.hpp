@@ -4,7 +4,6 @@
 #include "Socket.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
-
 #include <string>
 #include <poll.h>
 #include <map>
@@ -14,6 +13,9 @@
 #include <vector>
 #include <cstdlib>
 #include <cstdio>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <csignal>
 
 
 extern int signaled;
@@ -67,7 +69,6 @@ class Server
         void                    quit(Client&, string, int, int);
         void                    exit(Client&, string, int, int);
    
-
         //commands
         void kick (string&, Client&, int);
         void invite (string&, Client&, int);
@@ -77,7 +78,6 @@ class Server
         //helpers func
         int findCliendFD(const string &nick);
 };
-
 
 void handle_signals(int sig);
 #endif
