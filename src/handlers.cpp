@@ -150,7 +150,10 @@ void Server::privmsg_user(int sender_fd, string target, string reply)
 
 void    Server::join(string line, Client& client, int sender_fd)
 {
-    string channelName = line.substr(5);
+    istringstream iss(line);
+    string cmd, channelName, key;
+    iss >> cmd >> channelName >> key;
+
     string nickname = client.getNickname();
     string reply;
 
@@ -177,8 +180,37 @@ void    Server::join(string line, Client& client, int sender_fd)
             return;
     }
 
+    //chedk chnnel invite only and user not invited
+    if(channel.isinviteonly() && !channel.isinvited(nickname)){
+        reply = ":myirc 473 " + nickname + " " + channelName + " :Cannot join channel (+i)\r\n";
+        send(sender_fd, reply.c_str(), reply.length(), 0);
+        return;
+    }
+
+    //check channel key
+    if(channel.hasKey()){
+        if(key.empty() || !channel.checkKey(key))
+        {
+
+            reply = ":myirc 475 " + nickname + " " + channelName + " :Cannot join channel (+k)\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return;
+        }
+    }
+
+    //check channel user limit
+    if(channel.getUserLimit() > 0 && (int)members.size() >= channel.getUserLimit()){
+        reply = ":myirc 471 " + nickname + " " + channelName + " :Cannot join channel (+l)\r\n";
+        send(sender_fd, reply.c_str(), reply.length(), 0);
+        return;
+    }
+
     channel.addMember(client);
     client.addtoChannels(channelName);
+
+    if(channel.isinvited(nickname))
+        channel.removeinvite(nickname);
+    members = channel.getMembers();
 
     // list of channels members
     string names;

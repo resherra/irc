@@ -72,7 +72,9 @@ bool Channel::hasKey(void){
 }
 
 bool Channel::checkKey(string &key){
-    return key.empty() || this->key == key;
+     if (key.empty())
+        return true;
+    return this->key == key;
 }
 
 void Channel::removekey(void){

@@ -79,6 +79,8 @@ void Server::invite(string &line, Client &client, int sender_fd){
     string cmd, target, chName;
     iss >> cmd >> target >> chName;
 
+    cout << "invite entring" << endl;
+
 
     if(channels.find(chName) == channels.end()){
         string err = ":myirc 403 " + clients[sender_fd].getNickname() + " " + target +  " :No such channel\r\n";
@@ -108,9 +110,10 @@ void Server::invite(string &line, Client &client, int sender_fd){
         return ;
     }
 
-    string invite_msg = ":" + client.getNickname() + "!" + client.getUsername() + "@host INVITE " + target + "\r\n";
+    channel.addinvite(target);
+    
+    string invite_msg = ":" + client.getNickname() + "!" + client.getUsername() + "@host INVITE " + target + " " + chName + "\r\n";
     send(cl_fd, invite_msg.c_str(), invite_msg.length(), 0);
-
 }
 
 void Server::topic(string line, Client client, int sender_fd){
@@ -347,7 +350,7 @@ void Server::mode(string line, Client &client, int sender_fd){
             else{
                 char lstchar = '\0'; 
                 if(!appliedmode.empty())
-                    lstchar = appliedmode.size() - 1;
+                    lstchar = appliedmode[appliedmode.size() - 1];
                 if(set && lstchar == '-')
                     appliedmode += "+";
                 else if(!set && lstchar == '+')
@@ -382,3 +385,8 @@ void Server::mode(string line, Client &client, int sender_fd){
                        
         }
     }
+
+
+//*first thing i have todo rn:
+// *check all the commands are work perfectly
+    // * a user after kicked a channel cant join aain unless if invite sent to him
