@@ -4,15 +4,13 @@ void Server::pollcl()
 {
     if (poll(pfds.data(), fd_count, -1) == -1)
     {
-        // poll() == -1 also returned if a signal arrived
+        // -1 also returned if a signal arrived
         
             close_fds(this->pfds);
+            cerr << "poll" << "\n";
             std::exit(1);
-        // }
-
+       
         
-        std::cout << "|" << errno << std::endl;
-        cerr << "poll" << "\n";
         // std::exit(1);
     }
 }

@@ -15,8 +15,8 @@
 #include <cstdio>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <csignal>
-#include <cerrno>
+// #include <csignal>
+// #include <cerrno>
 
 extern int signaled;
 
