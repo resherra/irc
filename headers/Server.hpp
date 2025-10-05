@@ -16,7 +16,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <csignal>
-
+#include <cerrno>
 
 extern int signaled;
 
@@ -42,7 +42,7 @@ class Server
         
     public:
         Server(string, string);
-        ~Server();
+        // ~Server();
 
         int                     getSockFd();
         int                     getFdCount();
@@ -54,8 +54,8 @@ class Server
         void                    handle_connections();
 
         // get all FDs 
-        vector<struct pollfd> getPollfds();
-        
+        // vector<struct pollfd> getPollfds();
+        void close_fds(vector<struct pollfd>   &pfds);
         //handlers      
         void                    cap(int);
         void                    nick(Client&, string, int);
