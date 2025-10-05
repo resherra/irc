@@ -23,8 +23,11 @@ Socket::Socket(string port)
         std::cerr << "socket fails" << "\n";
         std::exit(1);
     }
+    // kernel keeps port on a waiting mode even if closed so..
+    // the systemCall bellow sets a flag to 1 (opt = 1) in the socket layer..
     int opt = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    //             fd, socketlayer, theFLAG toMOdify, 1    , bytes to go from userspace to kernel space
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR     ,&opt  , sizeof(opt)) < 0)
     {
         // perror("setsockopt(SO_REUSEADDR) failed");
         std::exit(1);
