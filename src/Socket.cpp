@@ -29,7 +29,6 @@ Socket::Socket(string port)
     //             fd, socketlayer, theFLAG toMOdify, 1    , bytes to go from userspace to kernel space
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR     ,&opt  , sizeof(opt)) < 0)
     {
-        // perror("setsockopt(SO_REUSEADDR) failed");
         std::exit(1);
     }
     if (bind(fd, ai->ai_addr, ai->ai_addrlen))
