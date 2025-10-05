@@ -23,6 +23,12 @@ Socket::Socket(string port)
         std::cerr << "socket fails" << "\n";
         std::exit(1);
     }
+    int opt = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        // perror("setsockopt(SO_REUSEADDR) failed");
+        std::exit(1);
+    }
     if (bind(fd, ai->ai_addr, ai->ai_addrlen))
     {
         std::cerr << "bind fails" << "\n";

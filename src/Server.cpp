@@ -8,7 +8,7 @@ void Server::pollcl()
         
             close_fds(this->pfds);
             cerr << "poll" << "\n";
-            std::exit(1);
+            std::exit(1);// 
        
         
         // std::exit(1);
