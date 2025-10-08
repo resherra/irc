@@ -15,8 +15,6 @@
 #include <cstdio>
 #include <netdb.h>
 #include <arpa/inet.h>
-// #include <csignal>
-// #include <cerrno>
 
 extern int signaled;
 
@@ -42,7 +40,7 @@ class Server
         
     public:
         Server(string, string);
-        // ~Server();
+        ~Server(){};
 
         int                     getSockFd();
         int                     getFdCount();
@@ -67,7 +65,6 @@ class Server
         void                    privmsg_user(int, string, string);
         void                    part(Client&, string, int);
         void                    quit(Client&, string, int, int);
-        void                    exit(Client&, string, int, int);
    
         //commands
         void kick (string&, Client&, int);
@@ -77,6 +74,8 @@ class Server
 
         //helpers func
         int findCliendFD(const string &nick);
+        bool checkParams(string &line, string &cmd, Client& cl, int sender_fd);
+
 };
 
 void handle_signals(int sig);

@@ -34,9 +34,11 @@ void Server::handleClientData(int index)
 
             if (cmd == "PASS" && !client.getAuth())
             {
+                if(Server::checkParams(line, cmd, client, sender_fd) == false)
+                    break;
                 string pass = line.substr(5);
-                if (pass != password)
-                {
+
+                if (pass != password){
                     string reply = ":myirc 464 * :Password incorrect\r\n";
                     send(sender_fd, reply.c_str(), reply.length(), 0);
                 } else
@@ -49,10 +51,16 @@ void Server::handleClientData(int index)
             {
                 if (line.find("CAP LS ") == 0)
                     Server::cap(sender_fd);
-                else if (cmd == "NICK")
+                else if (cmd == "NICK"){
+                    if(Server::checkParams(line, cmd, client, sender_fd) == false)
+                        break;
                     Server::nick(client, line, sender_fd);
-                else if (cmd == "USER")
+                }
+                else if (cmd == "USER"){
+                    if(Server::checkParams(line, cmd, client, sender_fd) == false)
+                        break ;
                     Server::user(client, line, sender_fd);
+                }
                 else if (client.getRegistred())
                 {
                     if (cmd == "PING")
