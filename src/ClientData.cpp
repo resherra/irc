@@ -25,12 +25,9 @@ void Server::handleClientData(int index)
             string line = client.getMessage().substr(0, pos);
             client.getMessage().erase(0, pos + 2);
 
-            // command
             string::size_type space_pos = line.find(" ");
             string  cmd = line.substr(0, space_pos);
 
-            std::cout << "<<<" << line << ">>>" << std::endl;
-            // std::cout << "<<<" << cmd << ">>>" << std::endl;
 
             if (cmd == "PASS" && !client.getAuth())
             {
@@ -96,16 +93,16 @@ void Server::handleClientData(int index)
                         Server::topic(line, client, sender_fd);
                     else if(cmd == "MODE")
                         Server::mode(line, client, sender_fd);
-                    else if (cmd == "QUIT")
+                    else if (cmd == "QUIT"){
                         Server::quit(client, line, sender_fd, index);
-                    else
-                    {
+                        return;   
+                    }
+                    else{
                         stringstream reply;
                         reply << ":myirc 421 " << client.getNickname() << " " << cmd << " :Unknown command\r\n";
                         send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
                     }
-                } else
-                {
+                } else{
                     stringstream reply;
                     reply << ":myirc 451 * " << ":You have not registered\r\n";
                     send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
