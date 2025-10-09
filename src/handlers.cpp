@@ -205,6 +205,18 @@ void    Server::join(string line, Client& client, int sender_fd)
         return;
     }
 
+    // int bot_is_up = 0;
+    // for (size_t i = 0; i < this->clients.size()       ; i++)
+    // {
+    //     if (this->clients[i].getNickname() == "bot")
+    //         {
+    //             send(this->clients[i].getFd(), "start_connection", 17, 0);
+    //             bot_is_up = 1;
+    //         }
+
+    //     std::cout << this->clients[i].getNickname() <<  "<<<" << std::endl;
+    // }
+    
     channel.addMember(client);
     client.addtoChannels(channelName);
 
