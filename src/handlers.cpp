@@ -127,9 +127,68 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
     }
 }
 
-void Server::privmsg_user(int sender_fd, string target, string reply)
+void Server::privmsg_user(int sender_fd, string target, string reply, std::string msg, Client& client)
 {
-    bool user_exist = false;
+
+    if (target == "bot")
+    {
+        if (msg == "!time") 
+        {
+            time_t now = time(NULL);
+            msg  = "#"+std::string(ctime(&now)) ;    
+        }
+        else if (msg == "!ping") 
+        {
+            msg = "#!PONG";
+
+        }
+        else if (msg == "!cmds")
+        {
+
+            std::string str[9] = {
+              
+                    "#Common IRC-Specific Commands:", " ",
+
+                "#/kick <nick> [reason]: Kicks a user from the current channel.",
+            "#/ban <nick> [mask]: Bans a user from the current channel.",
+                "#/unban <mask>: Unbans a user from the current channel.",
+                "#/mode <channel> <modes> [args]: Sets or changes channel modes.",
+                "#/whois <nick>: Displays information about a user.",
+                "#/list: Lists available channels.", " "};
+                for (size_t i = 0; i < 9  ; i++)
+                {
+                    string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + str[i] + "\r\n";
+                  
+                    send(sender_fd, reply.c_str(), reply.length(), 0);
+                }
+               
+                return;
+        }
+        else
+        {
+            std::string str[5] = {
+                "___________BOT COMMANDS______________",
+                "(!time )-> Show current server time",
+                "(!ping )-> Simple response (test bot is alive)",
+                "(!cmds )-> Admin / Channel Management Helpers"," "
+            };
+                for (size_t i = 0; i < 5 ; i++)
+                {
+                    string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + str[i] + "\r\n";
+                   
+                    send(sender_fd, reply.c_str(), reply.length(), 0);
+                }
+               
+                return;
+        }
+        string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" +msg + "\r\n";
+
+      
+        send(sender_fd, reply.c_str(), reply.length(), 0);
+        return;
+    }
+   
+        bool user_exist = false;
     for (map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
         Client cl = (*it).second;

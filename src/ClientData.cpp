@@ -72,10 +72,11 @@ void Server::handleClientData(int index)
                             string target = line.substr(8, space_pos - 8);
                             string msg = line.substr(space_pos + 2);
                             string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
+                            cout << msg <<endl;
                             if (target[0] == '#')
                                 Server::privmsg_channel(sender_fd, target, reply, false);
                             else
-                                Server::privmsg_user(sender_fd, target, reply);
+                                Server::privmsg_user(sender_fd, target, reply, msg, client);
                         }
                         else
                         {

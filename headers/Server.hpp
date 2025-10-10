@@ -16,8 +16,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-extern int signaled;
-
 using namespace std;
 
 class Server
@@ -51,10 +49,8 @@ class Server
 
         void                    handle_connections();
 
-        // get all FDs 
-        // vector<struct pollfd> getPollfds();
-        void close_fds(vector<struct pollfd>   &pfds);
-        //handlers      
+   
+        void close_fds(vector<struct pollfd>   &pfds); 
         void                    cap(int);
         void                    nick(Client&, string, int);
         void                    user(Client&, string, int);
@@ -62,7 +58,7 @@ class Server
         void                    ping(int);
         void                    join(string, Client&, int);
         void                    privmsg_channel(int, string, string, bool join_bool);
-        void                    privmsg_user(int, string, string);
+        void                    privmsg_user(int, string, string, string, Client&);
         void                    part(Client&, string, int);
         void                    quit(Client&, string, int, int);
    

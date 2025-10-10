@@ -24,8 +24,6 @@ int main(int ac, char **av)
         exit(1);
     }
     Server serv(av[1], av[2]);
-    // signal(SIGINT, handle_signals);
-
     cout << "server: waiting for connections on port " << serv.getPort() << "\n";
     serv.inst_poll();    
     while (!signaled)
@@ -36,13 +34,5 @@ int main(int ac, char **av)
     
     std::cout << "df" << std::endl;
 
-    // if(signaled)
-    //     {
-            // for (size_t i = 0; i < serv.getPollfds().size(); i++)
-            //     {
-            //         std::cout << "df" << std::endl;
-            //         close( serv.getPollfds()[i].fd);
-            //     }
-
-        // }
+    //
 }
