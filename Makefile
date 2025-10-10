@@ -12,7 +12,7 @@ $(NAME): $(OBJ)
 %.o: %.cpp $(HEADERS)
 	c++ $(FLAGS) -c $< -o $@
 
-run:
+run: all
 	./ircserv 6667 connect
 
 clean:

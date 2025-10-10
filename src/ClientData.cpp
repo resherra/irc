@@ -20,7 +20,7 @@ void Server::handleClientData(int index)
         client.setMessage(msg);
 
         string::size_type pos = client.getMessage().find("\r\n");
-        while (pos != std::string::npos)
+        while (pos != string::npos)
         {
             string line = client.getMessage().substr(0, pos);
             client.getMessage().erase(0, pos + 2);
@@ -28,7 +28,8 @@ void Server::handleClientData(int index)
             string::size_type space_pos = line.find(" ");
             string  cmd = line.substr(0, space_pos);
 
-
+            cout << "<<<" << line << ">>>" << endl;
+            
             if (cmd == "PASS" && !client.getAuth())
             {
                 if(Server::checkParams(line, cmd, client, sender_fd) == false)
@@ -72,7 +73,6 @@ void Server::handleClientData(int index)
                             string target = line.substr(8, space_pos - 8);
                             string msg = line.substr(space_pos + 2);
                             string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + msg + "\r\n";
-                            cout << msg <<endl;
                             if (target[0] == '#')
                                 Server::privmsg_channel(sender_fd, target, reply, false);
                             else
@@ -98,12 +98,15 @@ void Server::handleClientData(int index)
                         Server::quit(client, line, sender_fd, index);
                         return;   
                     }
-                    else{
-                        stringstream reply;
-                        reply << ":myirc 421 " << client.getNickname() << " " << cmd << " :Unknown command\r\n";
-                        send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+                    else {
+                        if (cmd.length())
+                        {
+                            stringstream reply;
+                            reply << ":myirc 421 " << client.getNickname() << " " << cmd << " :Unknown command\r\n";
+                            send(sender_fd, reply.str().c_str(), reply.str().length(), 0);
+                        }
                     }
-                } else{
+                } else {
                     stringstream reply;
                     reply << ":myirc 451 * " << ":You have not registered\r\n";
                     send(sender_fd, reply.str().c_str(), reply.str().length(), 0);

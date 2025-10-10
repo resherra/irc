@@ -115,7 +115,7 @@ void Channel::removeMember(string& nick){
     }
 
     if(moderators.erase(nick) > 0)
-         std::cout << "the member: " + nick << " erased frome the ops set" << endl;
+         cout << "the member: " + nick << " erased frome the ops set" << endl;
 }
 
 void Channel::removeModerator(string nick){

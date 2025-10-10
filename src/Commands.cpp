@@ -179,7 +179,7 @@ void Server::mode(string line, Client &client, int sender_fd){
     string cmd, chName, modes;
     vector<string> params;
     iss >> cmd >> chName >> modes;
-    std::string modeparams;
+    string modeparams;
 
     while (iss >> modeparams)
         params.push_back(modeparams);
@@ -193,7 +193,7 @@ void Server::mode(string line, Client &client, int sender_fd){
     Channel& channel = channels[chName];
 
     if (modes.empty()) {
-        std::string reply = ":myirc 324 " + client.getNickname() + " " + chName + " " + channel.getModeString() + "\r\n";
+        string reply = ":myirc 324 " + client.getNickname() + " " + chName + " " + channel.getModeString() + "\r\n";
         send(sender_fd, reply.c_str(), reply.length(), 0);
         return;
     }

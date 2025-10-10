@@ -2,7 +2,7 @@
 
 using   namespace std;
 
-struct sockaddr_storage their_addr; // connector's address info
+struct sockaddr_storage their_addr;
 char s[INET6_ADDRSTRLEN];
 
 void *get_in_addr(struct sockaddr *sa)
@@ -14,7 +14,6 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-int signaled  = 0;
 
 int main(int ac, char **av)
 {
@@ -26,13 +25,9 @@ int main(int ac, char **av)
     Server serv(av[1], av[2]);
     cout << "server: waiting for connections on port " << serv.getPort() << "\n";
     serv.inst_poll();    
-    while (!signaled)
+    while (1)
     {
         serv.pollcl();
         serv.handle_connections();
     }
-    
-    std::cout << "df" << std::endl;
-
-    //
 }

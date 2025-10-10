@@ -4,7 +4,7 @@ void Server::pollcl(){
     if (poll(pfds.data(), fd_count, -1) == -1){   
             close_fds(this->pfds);
             cerr << "poll" << "\n";
-            std::exit(1);
+            exit(1);
     }
 }
 
@@ -30,7 +30,6 @@ Server::Server(string port, string password):   port(atoi(port.c_str())),
 
 void Server::close_fds(vector<struct pollfd>   &pfds){
     for (size_t i = 0; i <pfds.size(); i++){
-            // std::cout << "df" << std::endl;
             close(pfds[i].fd);
         }
 

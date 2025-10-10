@@ -2,7 +2,7 @@
 
 void Server::createNewClient(int newfd)
 {
-    std::pair<int, Client> cli(newfd, Client(newfd));
+    pair<int, Client> cli(newfd, Client(newfd));
     
     struct pollfd new_fd;
     new_fd.fd = newfd;

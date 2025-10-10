@@ -78,7 +78,7 @@ class Client
             return username;
         }
 
-        std::string& getMessage() {
+        string& getMessage() {
             return message;
         }
 

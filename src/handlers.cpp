@@ -94,7 +94,7 @@ void    Server::user(Client& client, string line, int sender_fd)
 
 void    Server::ping(int sender_fd)
 {
-    std::string reply = "PONG :active\r\n";
+    string reply = "PONG :active\r\n";
     send(sender_fd, reply.c_str(), reply.length(), 0);
 }
 
@@ -127,7 +127,7 @@ void    Server::privmsg_channel(int sender_fd, string target, string reply, bool
     }
 }
 
-void Server::privmsg_user(int sender_fd, string target, string reply, std::string msg, Client& client)
+void Server::privmsg_user(int sender_fd, string target, string reply, string msg, Client& client)
 {
 
     if (target == "bot")
@@ -135,7 +135,7 @@ void Server::privmsg_user(int sender_fd, string target, string reply, std::strin
         if (msg == "!time") 
         {
             time_t now = time(NULL);
-            msg  = "#"+std::string(ctime(&now)) ;    
+            msg  = "#" + string(ctime(&now)) ;    
         }
         else if (msg == "!ping") 
         {
@@ -145,17 +145,16 @@ void Server::privmsg_user(int sender_fd, string target, string reply, std::strin
         else if (msg == "!cmds")
         {
 
-            std::string str[9] = {
-              
-                    "#Common IRC-Specific Commands:", " ",
+            string str[7] = {
+                    "#Admin / Channel Management Helpers:", " ",
 
-                "#/kick <nick> [reason]: Kicks a user from the current channel.",
-            "#/ban <nick> [mask]: Bans a user from the current channel.",
-                "#/unban <mask>: Unbans a user from the current channel.",
-                "#/mode <channel> <modes> [args]: Sets or changes channel modes.",
-                "#/whois <nick>: Displays information about a user.",
-                "#/list: Lists available channels.", " "};
-                for (size_t i = 0; i < 9  ; i++)
+                "#/kick <nick> : Eject a client from the channel.",
+                "#/invite <nick> : Invite a client to a channel.",
+                "#/topic <modify_topic_to>: Change or view the channel topic.",
+                "#/mode <args> : Change the channel mode.",
+                " "};
+
+                for (size_t i = 0; i < 7  ; i++)
                 {
                     string reply = ":" + client.getNickname() + "!" + client.getUsername() + "@host PRIVMSG " + target + " :" + str[i] + "\r\n";
                   
@@ -166,7 +165,7 @@ void Server::privmsg_user(int sender_fd, string target, string reply, std::strin
         }
         else
         {
-            std::string str[5] = {
+            string str[5] = {
                 "___________BOT COMMANDS______________",
                 "(!time )-> Show current server time",
                 "(!ping )-> Simple response (test bot is alive)",
@@ -188,7 +187,7 @@ void Server::privmsg_user(int sender_fd, string target, string reply, std::strin
         return;
     }
    
-        bool user_exist = false;
+    bool user_exist = false;
     for (map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
         Client cl = (*it).second;
@@ -239,7 +238,7 @@ void    Server::join(string line, Client& client, int sender_fd)
             return;
     }
 
-    //chedk chnnel invite only and user not invited
+    //check chnnel invite only and user not invited
     if(channel.isinviteonly() && !channel.isinvited(nickname)){
         reply = ":myirc 473 " + nickname + " " + channelName + " :Cannot join channel (+i)\r\n";
         send(sender_fd, reply.c_str(), reply.length(), 0);
@@ -264,18 +263,6 @@ void    Server::join(string line, Client& client, int sender_fd)
         return;
     }
 
-    // int bot_is_up = 0;
-    // for (size_t i = 0; i < this->clients.size()       ; i++)
-    // {
-    //     if (this->clients[i].getNickname() == "bot")
-    //         {
-    //             send(this->clients[i].getFd(), "start_connection", 17, 0);
-    //             bot_is_up = 1;
-    //         }
-
-    //     std::cout << this->clients[i].getNickname() <<  "<<<" << std::endl;
-    // }
-    
     channel.addMember(client);
     client.addtoChannels(channelName);
 
