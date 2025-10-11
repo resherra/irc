@@ -16,7 +16,7 @@ void    Server::handle_connections()
     
     for (int i = 0; i < fd_count; i++)
     { 
-        if (pfds[i].revents & (POLLIN | POLLHUP))
+        if (pfds[i].revents & (POLLIN))
         {
             if (pfds[i].fd == so_fd)
                 newClient();
