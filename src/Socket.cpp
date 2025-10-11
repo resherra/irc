@@ -34,15 +34,10 @@ Socket::Socket(string port)
         cerr << "bind fails" << "\n";
         exit(1);
     }
-
     delete ai;
-
     if (listen(fd, 10))
     {
         cerr << "listen fails" << "\n";
         exit(1);
-    }
-
-
-    
+    }    
 }

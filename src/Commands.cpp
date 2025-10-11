@@ -1,5 +1,52 @@
 #include "../headers/Server.hpp"
 
+bool Server::checkParams(string &line, string &cmd, Client & cl, int sender_fd){
+    if (cmd == "PASS") 
+    {
+        if(line.length() <= 5 || line[4] != ' '){
+            string reply = ":myirc 461 " + cl.getNickname() + " PASS :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+
+        string pass = line.substr(5);
+        if(pass.empty() || pass.find_first_not_of(" \t") == string::npos){
+            string reply = ":myirc 461 " + cl.getNickname() + " PASS :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+    } else if (cmd == "NICK")
+    {
+        if(line.length() <= 5){
+            string reply = ":myirc 461 NICK :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+
+        string nick = line.substr(5);
+        if(nick.empty() || nick.find_first_not_of(" \t") == string::npos){
+            string reply = ":myirc 461 NICK :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+    } else if (cmd == "USER")
+    {
+        if(line.length() <= 5 || line[4] != ' '){
+            string reply = ":myirc 461 " + cl.getNickname() + " USER :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+        string user = line.substr(5);
+        if(user.empty() || user.find_first_not_of(" \t") == string::npos){
+            string reply = ":myirc 461 " + cl.getNickname() + " USER :Not enough parameters\r\n";
+            send(sender_fd, reply.c_str(), reply.length(), 0);
+            return false;
+        }
+    }
+    return true;
+}
+
+
 int Server::findCliendFD(const string &nick){
 
     for (map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it){
