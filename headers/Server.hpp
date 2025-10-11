@@ -26,7 +26,6 @@ class Server
         
         Socket                  sock_fd;
         int                     fd_count;
-        int                     fd_size;
         vector<struct pollfd>   pfds;
 
         map<int, Client>        clients;

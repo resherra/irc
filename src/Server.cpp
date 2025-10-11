@@ -29,8 +29,7 @@ void    Server::handle_connections()
 Server::Server(string port, string password):   port(atoi(port.c_str())), 
                                                 password(password),
                                                 sock_fd(port),
-                                                fd_count(0), 
-                                                fd_size(5) {}
+                                                fd_count(0) {}
 
 
 void Server::close_fds(vector<struct pollfd>   &pfds)
