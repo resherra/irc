@@ -13,6 +13,7 @@ void Server::inst_poll()
     struct pollfd inst;
     inst.fd = sock_fd.getFd();
     inst.events = POLLIN;
+
     pfds.push_back(inst);
     fd_count = 1;
 }

@@ -2,7 +2,8 @@
 
 void Server::pollcl()
 {
-    if (poll(pfds.data(), fd_count, -1) == -1){   
+    if (poll(pfds.data(), fd_count, -1) == -1)
+    {   
             close_fds(this->pfds);
             cerr << "poll" << "\n";
             exit(1);
@@ -11,11 +12,13 @@ void Server::pollcl()
 
 void    Server::handle_connections()
 {
+    int so_fd  = sock_fd.getFd();   
+    
     for (int i = 0; i < fd_count; i++)
     { 
         if (pfds[i].revents & (POLLIN | POLLHUP))
         {
-            if (pfds[i].fd == sock_fd.getFd())
+            if (pfds[i].fd == so_fd)
                 newClient();
             else
                 handleClientData(i);
