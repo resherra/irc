@@ -24,7 +24,7 @@ void Server::newClient()
     client_fd = accept(sock_fd.getFd(), (struct sockaddr *)&remoteaddr,
                        &addrlen);
     if (client_fd == -1)
-        perror("accept");
+        cerr << "accept" << '\n';
     else
         createNewClient(client_fd);
 }
